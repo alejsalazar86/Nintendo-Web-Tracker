@@ -10,8 +10,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-app = Flask(__name__, static_folder='static')
-# Usar variable de entorno para la clave secreta o una por defecto
+# CAMBIO IMPORTANTE: static_folder='.' indica que las imágenes están en la raíz
+app = Flask(__name__, static_folder='.')
 app.secret_key = os.environ.get('SECRET_KEY', 'nintendo_super_secret_key_2026')
 
 # CREDENCIALES
@@ -290,6 +290,7 @@ LIST_TEMPLATE = '''
             position: relative; display: flex; flex-direction: column;
         }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); border-color: var(--accent); }
+        
         .sw2-banner { width: 100%; height: auto; display: block; border-bottom: 1px solid var(--border-color); }
         .card img.game-cover { width: 100%; height: 100%; object-fit: contain; background: #fff; border-bottom: 1px solid var(--border-color); }
         .info { padding: 12px; flex-grow: 1; }
@@ -342,8 +343,10 @@ LIST_TEMPLATE = '''
         <div class="filter-group">
             <label style="margin-bottom:12px;">Rango de Precios:</label>
             <label><input type="radio" name="priceRange" value="all" checked onchange="aplicarFiltros()"> Todos</label>
+            
             <label><input type="radio" name="priceRange" value="no-free" onchange="aplicarFiltros()"> Ocultar Gratis ($0)</label>
             <label><input type="radio" name="priceRange" value="1-20000" onchange="aplicarFiltros()"> $1 - $20k</label>
+            
             <label><input type="radio" name="priceRange" value="20000-40000" onchange="aplicarFiltros()"> $20k - $40k</label>
             <label><input type="radio" name="priceRange" value="40000-60000" onchange="aplicarFiltros()"> $40k - $60k</label>
             <label><input type="radio" name="priceRange" value="60000-80000" onchange="aplicarFiltros()"> $60k - $80k</label>
@@ -523,7 +526,6 @@ class NintendoManager:
 
 class NintendoScraper:
     def __init__(self):
-        # CONFIGURACIÓN PARA RENDER/NUBE (HEADLESS)
         self.options = Options()
         self.options.add_argument('--headless') 
         self.options.add_argument('--no-sandbox')
@@ -531,7 +533,6 @@ class NintendoScraper:
         self.options.add_argument('--window-size=1280,800')
         self.options.add_argument("user-agent=Mozilla/5.0")
         
-        # Detección automática del binario de Chrome en Render
         chrome_bin = os.environ.get("GOOGLE_CHROME_BIN")
         if chrome_bin:
             self.options.binary_location = chrome_bin
@@ -541,7 +542,6 @@ class NintendoScraper:
     def scrape_custom(self, plataforma, limite):
         global TASK_STATUS
         
-        # Mapeo de URLs
         if plataforma == "Switch 1":
             url = "https://www.nintendo.com/es-ar/store/games/#show=0&p=1&sort=df&f=corePlatforms&corePlatforms=Nintendo+Switch"
         elif plataforma == "Switch 2":
@@ -672,6 +672,5 @@ def view(ptype):
 
 if __name__ == "__main__":
     NintendoManager()
-    # En Render, se usa Gunicorn, pero esto permite ejecución local de prueba
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
